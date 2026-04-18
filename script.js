@@ -113,8 +113,8 @@ function gameLoop() {
         o.x -= gameSpeed; 
         drawCake(o.x, o.y, o.width, o.height);
 
-        if (cat.x < o.x + o.width - 30 && cat.x + cat.width > o.x + 30 &&
-            cat.y < o.y + o.height - 20 && cat.y + cat.height > o.y + 20) {
+        if (cat.x < o.x + o.width - 40 && cat.x + cat.width > o.x + 40 &&
+            cat.y < o.y + o.height - 30 && cat.y + cat.height > o.y + 30) {
             
             gameActive = false;
             cancelAnimationFrame(animationId);
