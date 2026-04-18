@@ -25,14 +25,14 @@ function updateLeaderboardUI() {
 }
 
 // --- VARIABLES ---
-let gameSpeed = 2;
+let gameSpeed = 2.5;
 let gameActive = false;
 let obstacles = [];
 let score = 0;
 let introActive = true;
 let animationId;
-let confetti = [];
 const confettiColors = ["#ff80ab", "#ff4081", "#00e5ff", "#76ff03", "#ffff00", "#ff3d00"];
+let confetti = [];
 let bgDecorations = [];
 
 for(let i = 0; i < 5; i++) {
@@ -43,7 +43,7 @@ for(let i = 0; i < 5; i++) {
     });
 }
 
-let cat = { x: -100, y: 300, width: 50, height: 50, velocity: 0, gravity: 0.5, jumpStrength: -16, isJumping: false, danceStep: 0 };
+let cat = { x: -100, y: 300, width: 50, height: 50, velocity: 0, gravity: 0.8, jumpStrength: -15, isJumping: false, danceStep: 0 };
 
 // --- LOGIC ---
 function typeMessage() {
@@ -76,36 +76,52 @@ function introLoop() {
     animationId = requestAnimationFrame(introLoop);
 }
 
-window.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && !cat.isJumping && gameActive) {
-        cat.velocity = cat.jumpStrength; cat.isJumping = true;
-    }
-    // This makes the cat jump when Maddy taps her phone screen
-window.addEventListener('touchstart', function(e) {
+// --- INPUT HANDLERS ---
+function handleJump() {
     if (gameActive && !cat.isJumping) {
         cat.velocity = cat.jumpStrength;
         cat.isJumping = true;
     }
-    // This stops the phone from doing the "double-tap zoom" thing
-    if (e.target.id !== 'initialsInput') {
-        e.preventDefault();
-    }
-}, {passive: false});
+}
+
+window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') handleJump();
 });
 
+window.addEventListener('touchstart', (e) => {
+    if (gameActive) {
+        if (e.target.id !== 'initialsInput' && e.target.id !== 'saveBtn') {
+            handleJump();
+            e.preventDefault();
+        }
+    }
+}, {passive: false});
+
+// --- GAMEPLAY ---
 function spawnObstacle() {
     if (!gameActive) return;
     obstacles.push({ x: canvas.width, y: 320, width: 50, height: 50 });
-    setTimeout(spawnObstacle, Math.max(700, 1500 - (score / 15)));
+    // Spaced out more for easier play
+    setTimeout(spawnObstacle, Math.max(1000, 1800 - (score / 10)));
 }
 
 function gameLoop() {
     if (!gameActive) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBackground();
-    gameSpeed += 0.002; 
-    cat.velocity += cat.gravity; cat.y += cat.velocity;
-    if (cat.y > 300) { cat.y = 300; cat.isJumping = false; cat.velocity = 0; }
+    
+    // Slower difficulty increase
+    gameSpeed += 0.0005; 
+    
+    cat.velocity += cat.gravity; 
+    cat.y += cat.velocity;
+    
+    if (cat.y > 300) { 
+        cat.y = 300; 
+        cat.isJumping = false; 
+        cat.velocity = 0; 
+    }
+    
     updateGifPosition();
 
     for (let i = 0; i < obstacles.length; i++) {
@@ -113,15 +129,24 @@ function gameLoop() {
         o.x -= gameSpeed; 
         drawCake(o.x, o.y, o.width, o.height);
 
-        if (cat.x < o.x + o.width - 40 && cat.x + cat.width > o.x + 40 &&
-            cat.y < o.y + o.height - 30 && cat.y + cat.height > o.y + 30) {
-            
-            gameActive = false;
-            cancelAnimationFrame(animationId);
-            showGameOver();
-            return;
+        // Tighter Collision Check: Only check if cake is actually near the cat
+        if (o.x > 30 && o.x < 120) {
+            if (cat.x < o.x + o.width - 40 && cat.x + cat.width > o.x + 40 &&
+                cat.y < o.y + o.height - 30 && cat.y + cat.height > o.y + 30) {
+                
+                gameActive = false;
+                cancelAnimationFrame(animationId);
+                showGameOver();
+                return;
+            }
         }
     }
+    
+    // Clear off-screen obstacles to keep game light
+    if (obstacles.length > 0 && obstacles[0].x < -50) {
+        obstacles.shift();
+    }
+
     score++;
     animationId = requestAnimationFrame(gameLoop);
 }
@@ -138,17 +163,21 @@ saveBtn.onclick = function() {
     highScores.sort((a, b) => b.score - a.score);
     highScores = highScores.slice(0, 3);
     localStorage.setItem('maddyHighScores', JSON.stringify(highScores));
-    
-    // Smooth reload
     location.reload();
 };
 
 document.getElementById('startButton').onclick = function() {
-    introActive = false; gameActive = true;
-    this.style.display = 'none'; document.getElementById('banner-container').style.display = 'none';
-    cat.x = 50; cat.y = 300; spawnObstacle(); gameLoop();
+    introActive = false; 
+    gameActive = true;
+    this.style.display = 'none'; 
+    document.getElementById('banner-container').style.display = 'none';
+    cat.x = 50; 
+    cat.y = 300; 
+    spawnObstacle(); 
+    gameLoop();
 };
 
+// --- VISUALS ---
 function drawCake(x, y, w, h) {
     ctx.fillStyle = "#ff80ab"; ctx.fillRect(x, y + 10, w, h - 10);
     ctx.fillStyle = "#f50057"; ctx.fillRect(x, y + 10, w, 5);
@@ -161,4 +190,5 @@ function createConfetti() { if (introActive && confetti.length < 50) { confetti.
 function updateAndDrawConfetti() { confetti.forEach(c => { c.y += c.speed; c.x += Math.sin(c.angle) * 1; ctx.fillStyle = c.color; ctx.fillRect(c.x, c.y, c.size, c.size); if (c.y > canvas.height) { c.y = -10; c.x = Math.random() * canvas.width; } }); }
 function drawBackground() { bgDecorations.forEach(bg => { bg.x -= bg.speed; if (bg.x < -50) bg.x = canvas.width + 50; ctx.fillStyle = bg.color; ctx.beginPath(); ctx.ellipse(bg.x, bg.y, bg.size * 0.8, bg.size, 0, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "rgba(0,0,0,0.2)"; ctx.beginPath(); ctx.moveTo(bg.x, bg.y + bg.size); ctx.lineTo(bg.x, bg.y + bg.size + 20); ctx.stroke(); }); }
 
-typeMessage(); introLoop();
+typeMessage(); 
+introLoop();
