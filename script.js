@@ -43,7 +43,8 @@ for(let i = 0; i < 5; i++) {
     });
 }
 
-let cat = { x: -100, y: 300, width: 80, height: 80, velocity: 0, gravity: 0.8, jumpStrength: -15, isJumping: false, danceStep: 0 };
+// MATCHED TO YOUR HTML: Width 100, Height 100
+let cat = { x: 50, y: 300, width: 100, height: 100, velocity: 0, gravity: 0.8, jumpStrength: -15, isJumping: false, danceStep: 0 };
 
 // --- LOGIC ---
 function typeMessage() {
@@ -64,19 +65,26 @@ function updateGifPosition() {
     introCatImg.style.display = introActive ? 'block' : 'none';
     gameCatImg.style.display = gameActive ? 'block' : 'none';
     const activeImg = introActive ? introCatImg : gameCatImg;
-    activeImg.style.top = gameActive ? (cat.y - 15) + 'px' : (cat.y - 175) + 'px';
+    // Aligning the GIF to the hitbox
+    activeImg.style.left = cat.x + 'px';
+    activeImg.style.top = (cat.y - 20) + 'px'; 
 }
 
 function introLoop() {
     if (!introActive) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBackground(); createConfetti(); updateAndDrawConfetti();
+    // Intro cat starts off-screen and walks in
     if (cat.x < 175) { cat.x += 3; } else { cat.danceStep += 0.1; cat.y = 300 + Math.sin(cat.danceStep) * 15; }
-    updateGifPosition();
+    
+    // Position the 300px intro cat differently than the 100px game cat
+    introCatImg.style.left = (cat.x - 100) + 'px';
+    introCatImg.style.top = (cat.y - 180) + 'px';
+    
     animationId = requestAnimationFrame(introLoop);
 }
 
-// --- INPUT HANDLERS ---
+// --- CONTROLS ---
 function handleJump() {
     if (gameActive && !cat.isJumping) {
         cat.velocity = cat.jumpStrength;
@@ -89,11 +97,9 @@ window.addEventListener('keydown', (e) => {
 });
 
 window.addEventListener('touchstart', (e) => {
-    if (gameActive) {
-        if (e.target.id !== 'initialsInput' && e.target.id !== 'saveBtn') {
-            handleJump();
-            e.preventDefault();
-        }
+    if (gameActive && e.target.id !== 'initialsInput' && e.target.id !== 'saveBtn') {
+        handleJump();
+        e.preventDefault();
     }
 }, {passive: false});
 
@@ -101,8 +107,7 @@ window.addEventListener('touchstart', (e) => {
 function spawnObstacle() {
     if (!gameActive) return;
     obstacles.push({ x: canvas.width, y: 320, width: 50, height: 50 });
-    // Spaced out more for easier play
-    setTimeout(spawnObstacle, Math.max(1000, 1800 - (score / 10)));
+    setTimeout(spawnObstacle, Math.max(1000, 2000 - (score / 10)));
 }
 
 function gameLoop() {
@@ -110,9 +115,7 @@ function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBackground();
     
-    // Slower difficulty increase
     gameSpeed += 0.0005; 
-    
     cat.velocity += cat.gravity; 
     cat.y += cat.velocity;
     
@@ -129,10 +132,14 @@ function gameLoop() {
         o.x -= gameSpeed; 
         drawCake(o.x, o.y, o.width, o.height);
 
-        // Tighter Collision Check: Only check if cake is actually near the cat
-        if (o.x > 30 && o.x < 120) {
-            if (cat.x < o.x + o.width - 40 && cat.x + cat.width > o.x + 40 &&
-                cat.y < o.y + o.height - 30 && cat.y + cat.height > o.y + 30) {
+        // HITBOX CHECK (The "Secret Area" that kills you)
+        // Only checks when cake is right at the cat's feet (X=50 to 150)
+        if (o.x > 30 && o.x < 150) {
+            // Shrinking the hitbox by 40px so the transparent edges don't kill you
+            if (cat.x + 40 < o.x + o.width && 
+                cat.x + cat.width - 40 > o.x &&
+                cat.y + 40 < o.y + o.height && 
+                cat.y + cat.height - 10 > o.y) {
                 
                 gameActive = false;
                 cancelAnimationFrame(animationId);
@@ -142,10 +149,7 @@ function gameLoop() {
         }
     }
     
-    // Clear off-screen obstacles to keep game light
-    if (obstacles.length > 0 && obstacles[0].x < -50) {
-        obstacles.shift();
-    }
+    if (obstacles.length > 0 && obstacles[0].x < -50) obstacles.shift();
 
     score++;
     animationId = requestAnimationFrame(gameLoop);
@@ -177,7 +181,6 @@ document.getElementById('startButton').onclick = function() {
     gameLoop();
 };
 
-// --- VISUALS ---
 function drawCake(x, y, w, h) {
     ctx.fillStyle = "#ff80ab"; ctx.fillRect(x, y + 10, w, h - 10);
     ctx.fillStyle = "#f50057"; ctx.fillRect(x, y + 10, w, 5);
