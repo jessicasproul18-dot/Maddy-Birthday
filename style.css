@@ -87,4 +87,5 @@ canvas {
 
 #introCat, #gameCat {
     pointer-events: none; /* Makes sure taps go "through" the cat to the game */
+    max-width: 60%; /* Or whatever size looks best on your phone */
 }
