@@ -65,9 +65,10 @@ function updateGifPosition() {
     introCatImg.style.display = introActive ? 'block' : 'none';
     gameCatImg.style.display = gameActive ? 'block' : 'none';
     const activeImg = introActive ? introCatImg : gameCatImg;
-    // Aligning the GIF to the hitbox
+    
     activeImg.style.left = cat.x + 'px';
-    activeImg.style.top = (cat.y - 20) + 'px'; 
+    // This '- 30' ensures the GIF feet are at the bottom of the hit box
+    activeImg.style.top = (cat.y + 10) + 'px'; 
 }
 
 function introLoop() {
