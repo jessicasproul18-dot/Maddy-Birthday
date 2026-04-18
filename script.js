@@ -44,7 +44,7 @@ for(let i = 0; i < 5; i++) {
 }
 
 // MATCHED TO YOUR HTML: Width 100, Height 100
-let cat = { x: 50, y: 300, width: 100, height: 100, velocity: 0, gravity: 0.8, jumpStrength: -15, isJumping: false, danceStep: 0 };
+let cat = { x: 50, y: 280, width: 100, height: 100, velocity: 0, gravity: 0.8, jumpStrength: -15, isJumping: false, danceStep: 0 };
 
 // --- LOGIC ---
 function typeMessage() {
@@ -132,20 +132,20 @@ function gameLoop() {
         o.x -= gameSpeed; 
         drawCake(o.x, o.y, o.width, o.height);
 
-        // HITBOX CHECK (The "Secret Area" that kills you)
-        // Only checks when cake is right at the cat's feet (X=50 to 150)
-        if (o.x > 30 && o.x < 150) {
-            // Shrinking the hitbox by 40px so the transparent edges don't kill you
-            if (cat.x + 40 < o.x + o.width && 
-                cat.x + cat.width - 40 > o.x &&
-                cat.y + 40 < o.y + o.height && 
-                cat.y + cat.height - 10 > o.y) {
-                
-                gameActive = false;
-                cancelAnimationFrame(animationId);
-                showGameOver();
-                return;
-            }
+ // --- FIXED COLLISION ---
+if (o.x > 30 && o.x < 150) {
+    // We removed the +40 from the cat's Y so the collision 
+    // actually happens when the cat's body overlaps the cake.
+    if (cat.x + 20 < o.x + o.width && 
+        cat.x + cat.width - 20 > o.x &&
+        cat.y + cat.height > o.y + 5) { 
+        
+        gameActive = false;
+        cancelAnimationFrame(animationId);
+        showGameOver();
+        return;
+    }
+}
         }
     }
     
