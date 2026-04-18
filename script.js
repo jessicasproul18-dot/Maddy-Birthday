@@ -80,6 +80,17 @@ window.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && !cat.isJumping && gameActive) {
         cat.velocity = cat.jumpStrength; cat.isJumping = true;
     }
+    // This makes the cat jump when Maddy taps her phone screen
+window.addEventListener('touchstart', function(e) {
+    if (gameActive && !cat.isJumping) {
+        cat.velocity = cat.jumpStrength;
+        cat.isJumping = true;
+    }
+    // This stops the phone from doing the "double-tap zoom" thing
+    if (e.target.id !== 'initialsInput') {
+        e.preventDefault();
+    }
+}, {passive: false});
 });
 
 function spawnObstacle() {
