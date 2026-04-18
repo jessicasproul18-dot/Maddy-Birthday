@@ -43,7 +43,7 @@ for(let i = 0; i < 5; i++) {
     });
 }
 
-let cat = { x: -100, y: 300, width: 50, height: 50, velocity: 0, gravity: 0.8, jumpStrength: -15, isJumping: false, danceStep: 0 };
+let cat = { x: -100, y: 300, width: 80, height: 80, velocity: 0, gravity: 0.8, jumpStrength: -15, isJumping: false, danceStep: 0 };
 
 // --- LOGIC ---
 function typeMessage() {
