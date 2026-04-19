@@ -74,18 +74,3 @@ body {
     transform: translateX(-50%);
     transition: none; /* Keeps it snappy */
 }
-#game-wrapper {
-    touch-action: none; /* Prevents the screen from scrolling while playing */
-}
-
-canvas {
-    max-width: 100%; /* Shrinks the game to fit the phone width */
-    height: auto;    /* Keeps the proportions correct */
-    display: block;
-    margin: 0 auto;
-}
-
-#introCat, #gameCat {
-    pointer-events: none; /* Makes sure taps go "through" the cat to the game */
-    max-width: 60%; /* Or whatever size looks best on your phone */
-}
