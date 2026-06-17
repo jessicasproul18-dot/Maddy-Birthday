@@ -34,6 +34,7 @@ let animationId;
 let confetti = [];
 const confettiColors = ["#ff80ab", "#ff4081", "#00e5ff", "#76ff03", "#ffff00", "#ff3d00"];
 let bgDecorations = [];
+const groundY = 320;
 
 for(let i = 0; i < 5; i++) {
     bgDecorations.push({
@@ -43,28 +44,33 @@ for(let i = 0; i < 5; i++) {
     });
 }
 
-let cat = { x: -100, y: 300, width: 50, height: 50, velocity: 0, gravity: 0.5, jumpStrength: -16, isJumping: false, danceStep: 0 };
+let cat = { x: -100, y: groundY, width: 50, height: 50, velocity: 0, gravity: 0.5, jumpStrength: -16, isJumping: false, danceStep: 0 };
 
 // --- LOGIC ---
 function typeMessage() {
     const typewriter = document.getElementById('typewriter');
-    const msg = "Happy Birthday Maddy! 🎂";
-    let i = 0;
-    const interval = setInterval(() => {
-        typewriter.innerHTML += msg.charAt(i);
-        i++;
-        if (i >= msg.length) {
-            clearInterval(interval);
-            document.getElementById('startButton').style.display = 'inline-block';
-        }
-    }, 125);
+    const msg = "Happy Birthday Maddy! " + String.fromCodePoint(0x1F370);
+    typewriter.textContent = msg;
+    document.getElementById('startButton').style.display = 'inline-block';
 }
 
 function updateGifPosition() {
     introCatImg.style.display = introActive ? 'block' : 'none';
     gameCatImg.style.display = gameActive ? 'block' : 'none';
-    const activeImg = introActive ? introCatImg : gameCatImg;
-    activeImg.style.top = gameActive ? (cat.y - 15) + 'px' : (cat.y - 175) + 'px';
+
+    if (introActive) {
+        introCatImg.style.left = '50%';
+        introCatImg.style.top = '140px';
+        introCatImg.style.transform = 'translateX(-50%)';
+        return;
+    }
+
+    const spriteWidth = gameCatImg.width || 100;
+    const spriteHeight = gameCatImg.height || 100;
+
+    gameCatImg.style.left = (cat.x - spriteWidth / 2 + 10) + 'px';
+    gameCatImg.style.top = (cat.y + cat.height - spriteHeight + 4) + 'px';
+    gameCatImg.style.transform = 'none';
 }
 
 function introLoop() {
@@ -84,7 +90,7 @@ window.addEventListener('keydown', (e) => {
 
 function spawnObstacle() {
     if (!gameActive) return;
-    obstacles.push({ x: canvas.width, y: 320, width: 50, height: 50 });
+    obstacles.push({ x: canvas.width, y: groundY - 10, width: 50, height: 50 });
     setTimeout(spawnObstacle, Math.max(700, 1500 - (score / 15)));
 }
 
@@ -94,7 +100,7 @@ function gameLoop() {
     drawBackground();
     gameSpeed += 0.002; 
     cat.velocity += cat.gravity; cat.y += cat.velocity;
-    if (cat.y > 300) { cat.y = 300; cat.isJumping = false; cat.velocity = 0; }
+    if (cat.y > groundY) { cat.y = groundY; cat.isJumping = false; cat.velocity = 0; }
     updateGifPosition();
 
     for (let i = 0; i < obstacles.length; i++) {
@@ -102,9 +108,21 @@ function gameLoop() {
         o.x -= gameSpeed; 
         drawCake(o.x, o.y, o.width, o.height);
 
-        if (cat.x < o.x + o.width - 15 && cat.x + cat.width > o.x + 15 &&
-            cat.y < o.y + o.height - 10 && cat.y + cat.height > o.y + 10) {
-            
+        const catLeft = cat.x + 12;
+        const catRight = cat.x + cat.width - 10;
+        const catTop = cat.y + 8;
+        const catBottom = cat.y + cat.height - 4;
+        const cakeLeft = o.x + 3;
+        const cakeRight = o.x + o.width - 3;
+        const cakeTop = o.y + 12;
+        const cakeBottom = o.y + o.height - 3;
+
+        if (
+            catRight > cakeLeft &&
+            catLeft < cakeRight &&
+            catBottom > cakeTop &&
+            catTop < cakeBottom
+        ) {
             gameActive = false;
             cancelAnimationFrame(animationId);
             showGameOver();
@@ -135,7 +153,7 @@ saveBtn.onclick = function() {
 document.getElementById('startButton').onclick = function() {
     introActive = false; gameActive = true;
     this.style.display = 'none'; document.getElementById('banner-container').style.display = 'none';
-    cat.x = 50; cat.y = 300; spawnObstacle(); gameLoop();
+    cat.x = 50; cat.y = groundY; spawnObstacle(); gameLoop();
 };
 
 function drawCake(x, y, w, h) {

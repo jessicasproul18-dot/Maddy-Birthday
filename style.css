@@ -34,6 +34,7 @@ body {
     color: white;
     font-size: 28px;
     margin: 0;
+    font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", "Courier New", Courier, monospace;
 }
 
 #startButton {
@@ -46,6 +47,8 @@ body {
     cursor: pointer;
     font-family: 'Courier New', Courier, monospace;
     font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 8px;
 }
 #game-wrapper {
     position: relative; /* This is the 'anchor' for the GIFs */
@@ -68,9 +71,15 @@ body {
 #game-wrapper {
     overflow: visible; /* Make sure the cat isn't being 'clipped' off-screen */
 }
-#introCat, #gameCat {
-    /* This overrides the left: 0 default and centers the image */
-    left: 50% !important;
+#introCat {
+    left: 50%;
+    top: 140px;
     transform: translateX(-50%);
-    transition: none; /* Keeps it snappy */
+    transition: none;
+}
+
+#gameCat {
+    left: 0;
+    transform: none;
+    transition: none;
 }
